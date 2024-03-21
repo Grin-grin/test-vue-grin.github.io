@@ -1,17 +1,44 @@
 import { createStore } from "vuex";
 import IProduct from "@/interfaces/product/IProduct";
 import IMaterial from "@/interfaces/materials/IMaterial";
+import { SortEnum } from "@/enums/SortEnum";
 
 export default createStore({
   state: {
     products: [] as Array<IProduct>,
     favorites: [] as Array<IProduct>,
     purchase: [] as Array<IProduct>,
-    materials: [] as Array<IMaterial>
+    materials: [] as Array<IMaterial>,
+    sort: SortEnum.SORT_DEFAULT as string,
+    filterMaterial: -1
   },
   getters: {
-    products(state) {
-      return state.products;
+    getProducts(state) {
+      let products = state.products.map((item) => item);
+      if (state.sort === SortEnum.SORT_ASC) {
+        products = products.sort(
+          (a, b) => a.price.current_price - b.price.current_price
+        );
+      } else if (state.sort === SortEnum.SORT_DESC) {
+        products = products.sort(
+          (a, b) => b.price.current_price - a.price.current_price
+        );
+      }
+      if (state.filterMaterial > -1) {
+        products = products.filter(
+          (item) => item.material === state.filterMaterial
+        );
+      }
+
+      return products;
+    },
+
+    getFilterId(state) {
+      return state.filterMaterial;
+    },
+
+    getSortKey(state) {
+      return state.sort;
     },
 
     isProductPurchase: (state) => (id: string) => {
@@ -22,27 +49,9 @@ export default createStore({
       return state.favorites.findIndex((item) => item.id === id) === -1;
     },
 
-    sortByProducts: (state) => (key?: string) => {
-      if (!key) {
-        return state.products;
-      }
-
-      const sortAsc = state.products
-        .map((item) => item)
-        .sort((a, b) => a.price.current_price - b.price.current_price);
-      const sortDesc = state.products
-        .map((item) => item)
-        .sort((a, b) => b.price.current_price - a.price.current_price);
-
-      return key === "asc" ? sortAsc : sortDesc;
-    },
-
-    filterByMaterialProducts: (state) => (id?: number) => {
-      if (!id) {
-        return state.products;
-      }
-
-      return state.products.filter((item) => item.material === id);
+    getMaterials: (state) => {
+      console.log(state.materials, "11");
+      return state.materials;
     }
   },
   mutations: {
@@ -92,7 +101,16 @@ export default createStore({
     },
 
     ADD_MATERIALS(state, materials: Array<IMaterial>) {
+      console.log(materials);
       state.materials = materials;
+    },
+
+    SET_SORT(state, sort: string) {
+      state.sort = sort;
+    },
+
+    SET_FILTERS_MATERIALS(state, id: number) {
+      state.filterMaterial = id;
     }
   },
   actions: {
@@ -122,6 +140,14 @@ export default createStore({
 
     addMaterials({ commit }, materials: Array<IMaterial>) {
       commit("ADD_MATERIALS", materials);
+    },
+
+    setSort({ commit }, sort: SortEnum) {
+      commit("SET_SORT", sort);
+    },
+
+    setFilterMaterials({ commit }, id: number) {
+      commit("SET_FILTERS_MATERIALS", id);
     }
   },
   strict: true

@@ -19,7 +19,6 @@ const props = withDefaults(defineProps<ProductButtonProps>(), {});
 const store = useStore();
 
 const canAdd = computed(() => {
-  console.log(store.getters.isProductFavorite(props.product), "fav");
   return store.getters.isProductFavorite(props.product.id);
 });
 
