@@ -1,38 +1,57 @@
 <template>
-  <button @click="onClickPurchase">
-    <img v-if="canAdd" src="@/assets/svg/shopping.svg" :alt="props.purchase" />
-    <img v-else src="@/assets/svg/done.svg" :alt="props.purchase" />
+  <button class="btn-purchase" @click="onClickPurchase">
+    <component :is="renderIcon" :class="computedClassIcon" />
   </button>
 </template>
 
 <script setup lang="ts">
-import { ProductPurchaseEnum } from "@/components/product-list/product-card/ProductPurchaseEnum";
 import { computed } from "vue";
+import { IconDone, IconShopping } from "@/components/common/icons/index";
+import { useStore } from "vuex";
+import IProduct from "@/interfaces/product/IProduct";
 
 interface ProductButtonProps {
-  productId: string;
-  purchase: ProductPurchaseEnum;
+  product: IProduct;
 }
 
 const props = withDefaults(defineProps<ProductButtonProps>(), {});
 
+const store = useStore();
+
 const canAdd = computed(() => {
-  return props.purchase === ProductPurchaseEnum.PURCHASE;
+  return store.getters.isProductPurchase(props.product.id);
 });
 
-const canDelete = computed(() => {
-  return props.purchase === ProductPurchaseEnum.DELETE_PURCHASE;
+const renderIcon = computed(() => {
+  if (canAdd.value) {
+    return IconShopping;
+  }
+
+  return IconDone;
+});
+
+const computedClassIcon = computed(() => {
+  let classIcon = ["btn-purchase__icon"];
+  if (!canAdd.value) {
+    classIcon.push("btn-purchase__icon_green");
+  }
+
+  return classIcon;
 });
 const onClickPurchase = () => {
-  if (canAdd.value) {
-    console.log("в корзине");
-    localStorage.setItem("cart", props.productId);
+  if (!canAdd.value) {
+    store.dispatch("deleteStorePurchase", props.product.id);
+    return;
   }
-  if (canDelete.value) {
-    console.log("удалена");
-  }
-  console.log(props.productId, props.purchase);
+
+  store.dispatch("addStorePurchase", props.product);
 };
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.btn-purchase {
+  &__icon_green {
+    color: $app-color-green;
+  }
+}
+</style>

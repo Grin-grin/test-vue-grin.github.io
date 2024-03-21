@@ -1,39 +1,51 @@
 <template>
-  <button @click="onClickFavorites">
-    <img src="@/assets/svg/favorites.svg" alt="" />
+  <button class="btn-favorites" @click="onClickFavorites">
+    <IconFavorites :class="computedClassIcon" />
   </button>
 </template>
 
 <script setup lang="ts">
-import { ProductFavoritesEnum } from "@/components/product-list/product-card/ProductFavoritesEnum";
 import { computed } from "vue";
+import { IconFavorites } from "@/components/common/icons/index";
+import { useStore } from "vuex";
+import IProduct from "@/interfaces/product/IProduct";
 
 interface ProductButtonProps {
-  productId: string;
-  favorites: ProductFavoritesEnum;
+  product: IProduct;
 }
 
 const props = withDefaults(defineProps<ProductButtonProps>(), {});
 
+const store = useStore();
+
 const canAdd = computed(() => {
-  return props.favorites === ProductFavoritesEnum.ADD_FAVORITES;
+  console.log(store.getters.isProductFavorite(props.product), "fav");
+  return store.getters.isProductFavorite(props.product.id);
 });
 
-const canDelete = computed(() => {
-  return props.favorites === ProductFavoritesEnum.DELETE_FAVORITES;
+const computedClassIcon = computed(() => {
+  let classIcon = ["btn-favorites__icon"];
+  if (!canAdd.value) {
+    classIcon.push("btn-favorites__icon_red");
+  }
+
+  return classIcon;
 });
 
 const onClickFavorites = () => {
-  console.log(props.productId, props.favorites);
-  if (canAdd.value) {
-    console.log("в избранном");
+  if (!canAdd.value) {
+    store.dispatch("deleteStoreFavorites", props.product.id);
     return;
   }
 
-  if (canDelete.value) {
-    console.log("удалена из избранного");
-  }
+  store.dispatch("addStoreFavorites", props.product);
 };
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.btn-favorites {
+  &__icon_red {
+    color: $app-color-red;
+  }
+}
+</style>

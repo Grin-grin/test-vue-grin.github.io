@@ -23,14 +23,8 @@
           <span>{{ numberFormat(product.price.current_price) }}&#8381;</span>
         </div>
         <div class="product-card__actions">
-          <ProductButtonPurchase
-            :product-id="product.id"
-            :purchase="purchase"
-          />
-          <ProductButtonFavorites
-            :product-id="product.id"
-            :favorites="favorites"
-          />
+          <ProductButtonPurchase :product="product" />
+          <ProductButtonFavorites :product="product" />
         </div>
       </div>
     </div>
@@ -40,20 +34,13 @@
 <script setup lang="ts">
 import IProduct from "@/interfaces/product/IProduct";
 import ProductButtonPurchase from "@/components/product-list/product-card/product-button/ProductButtonPurchase.vue";
-import { ProductPurchaseEnum } from "@/components/product-list/product-card/ProductPurchaseEnum";
 import ProductButtonFavorites from "@/components/product-list/product-card/product-button/ProductButtonFavorites.vue";
-import { ProductFavoritesEnum } from "@/components/product-list/product-card/ProductFavoritesEnum";
 
 interface ProductProps {
   product: IProduct;
-  purchase?: ProductPurchaseEnum;
-  favorites?: ProductFavoritesEnum;
 }
 
-withDefaults(defineProps<ProductProps>(), {
-  purchase: ProductPurchaseEnum.PURCHASE,
-  favorites: ProductFavoritesEnum.ADD_FAVORITES
-});
+withDefaults(defineProps<ProductProps>(), {});
 
 function numberFormat(value) {
   return new Intl.NumberFormat().format(value);

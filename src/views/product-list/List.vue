@@ -7,25 +7,41 @@
 
 <script setup lang="ts">
 import { useRoute } from "vue-router";
-import { computed, onMounted, ref } from "vue";
+import { onMounted, ref } from "vue";
 import ProductList from "@/components/product-list/ProductList.vue";
-import store from "@/store";
+import { useStore } from "vuex";
 
 const route = useRoute();
 const title = ref(route.meta.title);
-const products = computed(() => {
-  return store.getters.products;
-});
+const store = useStore();
+const products = ref([]);
 
 onMounted(() => {
   load();
 });
 
 const load = () => {
-  fetch("data/items1.json")
+  fetch("data/items.json")
     .then((response) => response.json())
-    .then((data) => store.dispatch("addProducts", data));
+    .then((data) => {
+      store.dispatch("addProducts", data);
+      products.value = store.getters.products;
+    });
+
+  fetch("data/materials.json")
+    .then((response) => response.json())
+    .then((data) => store.dispatch("addMaterials", data));
+
+  store.dispatch("loadStore");
 };
+
+// const onFilterUpdate = (id?: string) => {
+//   products.value = store.getters.filterByMaterialProducts(id);
+// }; //todo
+
+/*const onSortUpdate = (sortKey?: string) => {
+  products.value = store.getters.sortByProducts(sortKey);
+};*/ // todo
 </script>
 
 <style scoped lang="scss">
